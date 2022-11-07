@@ -11,11 +11,12 @@ import axios from 'axios'
 
 
 
-const App = (props) => {
+const App = () => {
   const [page, setPage] = useState(1)
   const [query, setQuery] = useState('')
   const [images, setImages] = useState([])
   const [isloading, setIsloading] = useState(false)
+  const [totalHits, setTotalHits] = useState(0)
 
   
   const handleFormSubmit = query => {
@@ -45,6 +46,7 @@ const App = (props) => {
         )
         
         setImages((prevImages) => [...prevImages, ...res.data.hits])
+        setTotalHits(res.data.totalHits)
       }
       catch (error) { 
         console.log(error.message)
@@ -62,7 +64,7 @@ const App = (props) => {
           <Searchbar onSubmit={handleFormSubmit} />
           {isloading && <Loader />}
           {images && <ImageGallery images={images} />}
-          {images.length > 0 && <Button loadMore={loadMore} />}
+          {images.length > 0 && images.length !== totalHits && <Button loadMore={loadMore} />}
         </Container>
         
       </>
