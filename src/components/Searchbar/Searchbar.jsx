@@ -52,6 +52,8 @@ const Searchbar = ({onSubmit}) => {
 }
 
 export default Searchbar
+
+
 /*export class Searchbar extends Component {
     state = {
         query: '',
