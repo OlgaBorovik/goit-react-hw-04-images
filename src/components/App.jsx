@@ -1,64 +1,76 @@
-import { Component } from 'react'
+
 import  Searchbar  from './Searchbar/Searchbar'
 import { ImageGallery } from './ImageGallery/ImageGallery'
 import { Loader } from "./Loader/Loader"
 import { Button } from './Button/Button'
 import GlobalStyle from './GlobalStyle/GlobalStyle.styled'
 import {Container} from './Container/Container.styled'
+import { useState } from 'react'
+import { useEffect } from 'react'
+import axios from 'axios'
 
 
 
-export class App extends Component {
-  state = {
-        page: 1,
-        query: '',
-        images: [],
-        isloading: false,
-       
-        
-    }
-  handleFormSubmit = query => {
-    this.setState({
-      page: 1,
-      images: [],
-      query
-    })
-  }
-  
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1
-    }))
-  }
+const App = (props) => {
+  const [page, setPage] = useState(1)
+  const [query, setQuery] = useState('')
+  const [images, setImages] = useState([])
+  const [isloading, setIsloading] = useState(false)
 
   
-  componentDidUpdate(_, prevState) {
-    const { query, page } = this.state
+  const handleFormSubmit = query => {
+    setPage(1)
+    setImages([])
+    setQuery(query)
     
-    if (prevState.query !== this.state.query || prevState.page !== this.state.page) {
-      this.setState({isloading: true})
-      fetch(`https://pixabay.com/api/?q=${query}&page=${page}&key=29953966-c475d5dff4ed5a25f1b37ba96&image_type=photo&orientation=horizontal&per_page=12`)
-        .then(response => response.json())
-        .then(data => this.setState(prevState => ({images: [ ...prevState.images, ...data.hits ]}))
-      )
-      .finally(() => this.setState({isloading: false}))
-        
-    }
   }
-  render() {
+  
+  const loadMore = () => {
+    setPage(prevState => prevState + 1)
+  }
+
+  useEffect(() => {
+    if (query === '') {
+      return
+    }
+    setIsloading(true)
+
+    const controller = new AbortController()
+    async function fetchImages() {
+      try {
+        const res = await axios.get(`https://pixabay.com/api/?q=${query}&page=${page}&key=29953966-c475d5dff4ed5a25f1b37ba96&image_type=photo&orientation=horizontal&per_page=12`,
+        {
+          signal: controller.signal,
+        }
+        )
+        
+        setImages((prevImages) => [...prevImages, ...res.data.hits])
+      }
+      catch (error) { 
+        console.log(error.message)
+      }
+    }
+    fetchImages()
+    setIsloading(false)
+    return () => { controller.abort() }}, [query, page] )
+    
+  
     return (
       <>
         <GlobalStyle />
         <Container>
-          <Searchbar onSubmit={this.handleFormSubmit} />
-          {this.state.isloading && <Loader/>}
-          {this.state.images && <ImageGallery images={this.state.images}/>}
-          {this.state.images.length > 0 && <Button loadMore={this.loadMore} />}
+          <Searchbar onSubmit={handleFormSubmit} />
+          {isloading && <Loader />}
+          {images && <ImageGallery images={images} />}
+          {images.length > 0 && <Button loadMore={loadMore} />}
         </Container>
         
       </>
 
-  );
+    );
+  
+
   }
 
-};
+
+export default App
