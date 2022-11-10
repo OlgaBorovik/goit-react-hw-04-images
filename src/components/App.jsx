@@ -34,26 +34,26 @@ const App = () => {
     if (query === '') {
       return
     }
-    setIsloading(true)
-
+    setIsloading(true) 
     const controller = new AbortController()
     async function fetchImages() {
       try {
+        
         const res = await axios.get(`https://pixabay.com/api/?q=${query}&page=${page}&key=29953966-c475d5dff4ed5a25f1b37ba96&image_type=photo&orientation=horizontal&per_page=12`,
         {
           signal: controller.signal,
         }
         )
-        
-        setImages((prevImages) => [...prevImages, ...res.data.hits])
-        setTotalHits(res.data.totalHits)
+      setImages((prevImages) => [...prevImages, ...res.data.hits])
+      setTotalHits(res.data.totalHits)
       }
       catch (error) { 
         console.log(error.message)
       }
     }
-    fetchImages()
-    setIsloading(false)
+    
+  fetchImages()
+  setIsloading(false)
     return () => { controller.abort() }}, [query, page] )
     
   
